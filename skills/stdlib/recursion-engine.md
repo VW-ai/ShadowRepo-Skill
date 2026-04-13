@@ -52,7 +52,15 @@ Read source files and extract specs.
 - Create anchors for each spec (multi-file when applicable)
 - Add `depends_on` / `conflicts_with` relations when directly observable
 
-**Output:** Array of Spec objects for this scope.
+**File tracking (non-negotiable):**
+- Maintain a checklist of every file in this scope
+- As each file is read, mark it `read`
+- If ≥1 spec was extracted with an anchor to that file, mark it `covered`
+- Files read but yielding no spec → add to `uncovered_files` in the merge-result
+- Files never read (skipped due to size, binary, error) → add to `uncovered_files`
+- At the end of Extract, every file in the scope MUST be in exactly one bucket: `covered` or `uncovered`
+
+**Output:** Array of Spec objects for this scope, plus the file checklist (covered/uncovered).
 
 ### 4. Split (decision point)
 
@@ -70,12 +78,19 @@ Evaluate whether to recurse deeper.
 - Create a Scope object for each sub-scope (per `contracts/scope.md`)
 - Pass down: current feature understanding, existing specs (for dedup), parent summary
 
+**Completeness check (non-negotiable):**
+- After creating all sub-scopes, verify: `union(sub_scope.files for all sub-scopes) == this_scope.files`
+- If any files are missing from sub-scopes, create a **remainder sub-scope** containing them
+- Log: `"Split into {n} sub-scopes covering {total} files ({remainder} in remainder scope)"`
+- This prevents the primary source of file loss — imperfect splitting
+
 ### 5. Recurse (conditional)
 
-If split: spawn parallel agents for each sub-scope.
+If split: spawn parallel agents for each sub-scope using the Claude Code **Agent tool**.
 
 **How:**
-- Each agent receives: this engine definition + `methodology.md` + its sub-scope
+- Use the Agent tool to launch one agent per sub-scope. Launch all agents in a single message to maximize parallelism.
+- Each agent's prompt includes: this engine definition (`recursion-engine.md`) + `methodology.md` + `data-model.md` + its sub-scope object
 - Each agent writes its result to `.shadowrepo/.tmp/{scope_id}.json` (per `contracts/merge-result.md`)
 - Agents work independently — no cross-agent communication, no shared writes
 - Each agent runs this same engine from Step 1
@@ -98,7 +113,14 @@ Collect and synthesize results.
 - Apply `quality-gates.md` checks: density, coverage, confidence distribution
 - Correct feature tree based on bottom-up discoveries (a sub-scope may reveal that the parent's feature split was wrong)
 
-**Output:** A `merge-result.md` conforming to `contracts/merge-result.md`.
+**Coverage verification (non-negotiable):**
+- Compute `covered_files` = union of all files appearing in any spec anchor across all child results
+- Compute `missed_files` = `scope.files − covered_files − uncovered_files`
+- If `missed_files` is non-empty: these are files that were in the scope but never appeared in any child result (lost during split/recurse). Add them to `uncovered_files`.
+- Populate both `covered_files` and `uncovered_files` in the merge-result
+- Verify: `len(covered_files) + len(uncovered_files) == len(scope.files)` — if not, something was silently dropped. Investigate before writing output.
+
+**Output:** A `merge-result.md` conforming to `contracts/merge-result.md`. The `covered_files` and `uncovered_files` fields MUST be fully populated.
 
 ---
 

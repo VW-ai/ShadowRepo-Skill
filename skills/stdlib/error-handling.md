@@ -43,8 +43,8 @@ How to handle failures at each step of the recursion engine. Core principle: **d
 
 | Failure | Response |
 |---------|----------|
-| Agent spawn fails | Fall back to sequential processing in main context |
-| Agent produces malformed output | Discard result, retry once, then skip that scope |
+| Agent tool call fails | Fall back to sequential processing in main context |
+| Agent produces malformed output | Discard result, retry once with the Agent tool, then skip that scope |
 | Agent times out | Process that scope sequentially in main context |
 
 ### Merge Failures
@@ -54,6 +54,7 @@ How to handle failures at each step of the recursion engine. Core principle: **d
 | Duplicate spec IDs | Keep higher-confidence version |
 | Conflicting feature assignments | Prefer the assignment with more file affinity |
 | Quality gate fails | Flag for user review, do not silently drop |
+| Coverage gate fails | Return `uncovered_files` list in merge-result. Build skill handles backfill retry. |
 
 ---
 
@@ -63,3 +64,18 @@ How to handle failures at each step of the recursion engine. Core principle: **d
 2. **Report over hide.** When something fails, include it in uncovered_files or report to user.
 3. **Fallback over abort.** If parallel fails, go sequential. If git fails, use file system.
 4. **Ask over guess.** When ambiguous, present the situation to the user rather than making a silent judgment call.
+
+---
+
+## Coverage Recovery
+
+When build coverage is below 80% after a recursion pass, the **build skill** (not the recursion engine) runs backfill rounds. The recursion engine's job is to report coverage honestly; the build skill decides what to do about it.
+
+Backfill rules:
+
+1. **Only target uncovered files.** Do not re-run the entire recursion. The gap shrinks each round.
+2. **Inherit the feature tree** from the previous round. Backfill scopes skip the Understand step — features are already known. Pass `existing_features` in scope context.
+3. **Backfill scope ≤50 files → process as leaf** (no split). Most backfill rounds will be small enough.
+4. **Backfill scope >50 files → split normally**, but with existing feature context to guide grouping.
+5. **Max 3 total rounds** (1 full + 2 backfill). After round 3, accept the result — some files genuinely have no extractable specs.
+6. **Each round merges additively** — never discard previous round's specs. New specs append, updated specs replace by `spec_id`, coverage counters recalculate from the union.

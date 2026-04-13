@@ -11,7 +11,7 @@ Load this at the Report step of any skill.
 ### Build — Completion
 
 ```
-◆ ShadowRepo Build Complete
+◆ ShadowRepo Build {COMPLETE|PARTIAL}
 
   Repository:  {repo_name}
 
@@ -20,28 +20,44 @@ Load this at the Report step of any skill.
     {biz} business · {plat} platform · {cross} cross-cutting
 
   Specs:
-    {total} specs
+    {total} specs (density: {per_100}/100 files)
     intent {n} · decision {n} · constraint {n}
     contract {n} · convention {n} · context {n} · change {n}
 
   Coverage: {percent}% ({covered}/{total} files)
+  Rounds:   {n}/3
+
+  {if PARTIAL}
+  ⚠ Coverage below 80% target. {uncovered} files have no specs.
+    Largest uncovered areas: {dir1}, {dir2}, {dir3}
+  {endif}
 
   → Written to .shadowrepo/
 ```
 
-### Build — Progress
+### Build — Progress (per round)
 
 ```
 ◆ ShadowRepo Build — {repo_name}
 
-  ├─ ✓ Sense       {file_count} files discovered
-  ├─ ✓ Understand   {feature_count} features proposed
+  Round {n}/3 — {Full Scan|Backfill}
+
+  ├─ ✓ Sense       {file_count} files in scope
+  ├─ ✓ Understand   {feature_count} features {proposed|inherited}
   ├─ ● Extract      {done}/{total} files
-  │   ├─ ✓ {feature}     {n} specs
-  │   ├─ ✓ {feature}     {n} specs
-  │   ├─ ● {feature}      processing...
-  │   └─ ◌ {feature}      queued
-  └─ ◌ Merge        waiting
+  │   ├─ ✓ {scope}       {n} specs
+  │   ├─ ● {scope}        processing...
+  │   └─ ◌ {scope}        queued
+  ├─ ◌ Merge        waiting
+  └─ ◌ Coverage     target: 80%
+
+  {if round > 1}
+  Previous:
+    Round 1: {specs} specs, {coverage}% coverage
+    {if round > 2}
+    Round 2: +{specs} specs, {coverage}% coverage
+    {endif}
+  {endif}
 ```
 
 ### Check — Drift Found
@@ -63,7 +79,7 @@ Load this at the Report step of any skill.
       {spec_id}
       → {file} modified
 
-    ● LOW
+    ▽ LOW
       {spec_id}
       → {file} deleted (anchor orphaned)
 
@@ -153,6 +169,6 @@ Load this at the Report step of any skill.
 | `◌` | Queued / pending |
 | `▲` | High severity |
 | `■` | Medium severity / owns files |
-| `●` | Low severity |
+| `▽` | Low severity |
 | `◇` | Cross-cutting feature |
 | `├─` `└─` `│` | Tree connectors |

@@ -19,9 +19,10 @@ Generate human-readable docs from `.shadowrepo/` data.
 1. `.shadowrepo/` must exist with `specs.json` and `features.json`
    - If not: "No shadowRepo found. Run `/shadowrepo build` first."
 
-2. Run check first:
-   - If drifts found: warn user "ShadowRepo has {count} drifts. Docs may be stale. Run `/shadowrepo update` first, or continue anyway?"
-   - If user continues: proceed with current data
+2. Optional freshness check:
+   - If this is a git repo and git is available: run check logic to detect drifts
+   - If drifts found: warn user "ShadowRepo has {count} drifts. Docs may be stale. Run `/shadowrepo-update` first, or continue anyway?"
+   - If user continues, git unavailable, or not a git repo: proceed with current data
 
 ## Determine Format
 

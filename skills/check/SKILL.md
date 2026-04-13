@@ -70,7 +70,11 @@ For added files (not in any spec anchor):
 
 ### Step 5: Produce Check Result
 
-Write the result per `contracts/check-result.md`. Do NOT write to `.shadowrepo/` — check is read-only.
+Construct the result per `contracts/check-result.md`. Do NOT write to `.shadowrepo/` — check is read-only.
+
+**Lifecycle:**
+- **Standalone run** (`/shadowrepo check`): the result lives in conversation context only. Output the report (Step 6) and discard.
+- **Called by update** (`/shadowrepo update`): the result is held in conversation context as an intermediate value. Update's Step 3 reads it directly — no file I/O needed.
 
 ### Step 6: Report
 

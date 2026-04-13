@@ -16,6 +16,7 @@ Run check → scoped rebuild on drift areas → merge back into `.shadowrepo/`.
 2. Read `stdlib/data-model.md` — types
 3. Read `stdlib/recursion-engine.md` — for scoped rebuild
 4. Read `stdlib/git-operations.md` — for change detection
+5. Read `stdlib/quality-gates.md` — validation checks applied during Merge step
 
 ## Precondition Check
 
@@ -25,7 +26,7 @@ Same as check: `.shadowrepo/` must exist, must be a git repo.
 
 ### Step 1: Run Check
 
-Execute the check skill logic (from `check/SKILL.md`). Get the check result.
+Execute the check skill logic (from `check/SKILL.md`). The check result stays in conversation context as an intermediate value — no file I/O needed.
 
 If no drifts found: report "ShadowRepo is up to date. Nothing to update." and stop.
 

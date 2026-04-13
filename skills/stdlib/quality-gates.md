@@ -34,7 +34,7 @@ Applied after all extraction is complete.
 
 | Check | Pass Criteria | On Failure |
 |-------|--------------|------------|
-| File coverage | >= 80% of source files have at least one anchored spec | Read uncovered files, extract more |
+| File coverage | >= 80% of source files have at least one anchored spec | **ENFORCE:** return `uncovered_files` list to caller. Build skill runs backfill round. |
 | Feature coverage | Every feature has at least one spec | Extract for bare features |
 
 ## Density Gate
@@ -64,3 +64,29 @@ A healthy extraction has a bell curve around 0.7-0.8:
 - 20-30% of specs at 0.9 (directly observable facts)
 
 Skewed low = too much guessing. Skewed high = may be restating obvious facts (WHAT not WHY).
+
+## Gate Enforcement Levels
+
+Not all gates are equal. Some block, some retry, some advise.
+
+| Gate | Level | Behavior |
+|------|-------|----------|
+| Spec Quality | **Hard** | Discard failing specs immediately — no exceptions |
+| Feature Tree | Soft | Flag, auto-correct where possible (merge/split) |
+| Coverage | **Enforced** | Triggers backfill rounds in the build skill |
+| Density | Advisory | Flag in report, no automatic retry |
+| Relation | Advisory | Flag in report, no automatic retry |
+| Confidence | Advisory | Flag in report, no automatic retry |
+
+**Enforced** means the calling skill (build) will re-run extraction for uncovered areas. The coverage gate returns structured data so the caller can act on it:
+
+```json
+{
+  "passed": "boolean",
+  "coverage_percent": "number",
+  "covered_files": ["string[]"],
+  "uncovered_files": ["string[]"]
+}
+```
+
+This structured result is what the build skill's backfill loop consumes. See `build/SKILL.md` Step 2.
