@@ -24,6 +24,8 @@ Applied after merging all features.
 |-------|--------------|------------|
 | Feature count | 10-25 features total | Merge small features or split large ones |
 | Tree depth | 2-3 levels max | Flatten or restructure |
+| Tree hierarchy | >= 60% of features have non-null `parent` | Run Merge step 6b to link orphan features |
+| Feature types | All types in {`business`, `platform`, `cross-cutting`} | Reclassify per `methodology.md` Section 1 |
 | File coverage | Every source file in exactly one feature | Assign orphans, resolve duplicates |
 | Cross-cutting files | Cross-cutting features have empty key_files | Move files to business/platform features |
 | Size bounds | No feature with >15 files, none with <3 | Split or merge |

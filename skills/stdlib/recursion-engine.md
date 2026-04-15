@@ -33,12 +33,15 @@ Form or update feature understanding for this scope level.
 
 **How:**
 - Based on the file inventory and initial reading, identify features at this level
-- If root level: propose the top-level feature tree (10-25 features)
-- If sub-level: propose sub-features within the parent's scope
+- If root level, build the tree in two passes:
+  1. **Identify 5-8 root features** — major subsystems visible from top-level directories and manifests. Each root must be typed as exactly one of: `business`, `platform`, or `cross-cutting` (no other types — see `methodology.md` classification table). Root features represent coarse ownership boundaries (e.g. `api`, `auth`, `data-pipeline`, `shared-infra`).
+  2. **Nest sub-features under roots** — for each root, identify 1-4 distinct capabilities as sub-features. Set `parent` to the root's `feature_id`. Use `parent-slug/child-slug` naming (e.g. `auth/oauth`, `auth/jwt`). A sub-feature inherits its parent's type unless it clearly belongs to a different type. The total tree should have 10-25 features across 2-3 levels.
+  3. **Validate before proceeding:** every feature has `type` in {`business`, `platform`, `cross-cutting`}. Every non-root feature has a valid `parent`. At least 60% of features have a non-null `parent`.
+- If sub-level: propose sub-features within the parent's scope. Set `parent` to the parent scope's feature. Do not create new root features at sub-levels.
 - Apply `methodology.md` feature tree rules (classification, naming, file assignment)
 - In `incremental` mode: load existing features from `.shadowrepo/features.json`, only adjust affected areas
 
-**Output:** Preliminary feature assignments for files in this scope.
+**Output:** Preliminary feature assignments for files in this scope. The feature list MUST form a tree (not a flat list).
 
 ### 3. Extract
 
@@ -46,6 +49,7 @@ Read source files and extract specs.
 
 **How:**
 - Read source files (batch: use Read tool, up to 10 files per batch for efficiency)
+- Assign each spec to a feature. The feature's `type` MUST be one of: `business`, `platform`, `cross-cutting`. Do not invent other types (no `library`, `adapter`, `framework`, `ui`, etc.). If unsure, use `platform`.
 - For each file, apply `methodology.md` spec type triggers
 - Capture WHY, not WHAT. Follow the good/bad examples in methodology
 - Apply confidence calibration from methodology
@@ -90,7 +94,7 @@ If split: spawn parallel agents for each sub-scope using the Claude Code **Agent
 
 **How:**
 - Use the Agent tool to launch one agent per sub-scope. Launch all agents in a single message to maximize parallelism.
-- Each agent's prompt includes: this engine definition (`recursion-engine.md`) + `methodology.md` + `data-model.md` + its sub-scope object
+- Each agent's prompt includes: this engine definition (`recursion-engine.md`) + `methodology.md` + `data-model.md` + its sub-scope object + the parent-level feature tree (so sub-agents create sub-features under existing roots, not new root features)
 - Each agent writes its result to `.shadowrepo/.tmp/{scope_id}.json` (per `contracts/merge-result.md`)
 - Agents work independently — no cross-agent communication, no shared writes
 - Each agent runs this same engine from Step 1
@@ -107,11 +111,41 @@ Collect and synthesize results.
 - Merge specs: deduplicate by anchor overlap, keep higher-confidence version
 - Collect uncovered files from all children
 
-**Always (whether agents were spawned or not):**
-- Reconcile features: ensure tree invariants hold (every file assigned once, 10-25 features, etc.)
-- Add cross-scope relations: `relates_to` and `supersedes` between specs from different features
-- Apply `quality-gates.md` checks: density, coverage, confidence distribution
-- Correct feature tree based on bottom-up discoveries (a sub-scope may reveal that the parent's feature split was wrong)
+**Always (whether agents were spawned or not), run these sub-steps in order:**
+
+**6a. Enforce feature type constraint:**
+- Scan all features. Any feature with `type` not in {`business`, `platform`, `cross-cutting`} MUST be reclassified using the definitions in `methodology.md` Section 1 Classification table. If unclear, default to `platform`.
+
+**6b. Link orphan features into a tree:**
+- Collect all features where `parent` is null — these are current roots.
+- Target: 5-8 root features. If there are more orphan roots:
+  1. Group orphan features by directory proximity (features whose `key_files` share a common parent directory likely belong together).
+  2. For each group, pick the broadest feature as the root and set the others' `parent` to it. Update their `feature_id` to use `parent-slug/child-slug` naming.
+  3. If an orphan doesn't fit any group, check if it is a subset of an existing root's file directories — if so, make it a sub-feature of that root.
+- After linking, verify: at least 60% of features have a non-null `parent`. If not, repeat grouping with looser affinity (shared top-2 directory levels).
+- Apply size bounds: split features with >15 files, merge features with <3 files into the nearest sibling or parent.
+- Correct feature tree based on bottom-up discoveries (a sub-scope may reveal that the parent's feature split was wrong).
+
+**6c. Synthesize cross-scope anchors:**
+- For each `convention` and `contract` spec, check if files from OTHER scopes follow the same pattern:
+  1. Collect the spec's anchor file paths. Identify the pattern (e.g. "all files matching `src/repos/*.ts` return null for not-found").
+  2. Search other scopes' file lists for files matching the same pattern (same directory, same suffix, same naming convention).
+  3. Add those files as additional anchors to the existing spec. For conventions with >10 matching files, anchor to a representative 3-5.
+- For each `decision` spec, check if usage sites exist in other scopes. Add those as anchors.
+- Goal: conventions and contracts should average 3+ anchors. Single-anchor specs should drop below 60%.
+
+**6d. Build cross-scope relations:**
+- Perform a pairwise scan of specs from different features/scopes:
+  1. **Same-pattern dedup:** If two specs from different scopes describe the same convention or constraint (similar summary, overlapping anchor directories), MERGE them into one spec with combined anchors. Keep the higher-confidence version's summary.
+  2. **depends_on:** If spec A's anchor imports/calls code anchored by spec B, add `depends_on` from A to B.
+  3. **relates_to:** If specs from different features share the same anchor file, add `relates_to` between them (the file is a boundary point).
+  4. **Cross-cutting linkage:** For each `cross-cutting` feature's specs, add `relates_to` links to the `business`/`platform` specs whose anchors exhibit the described pattern.
+- Target: 20-30% of specs should have at least one relation. If below 20% after this pass, make a second pass looking for specs whose summaries reference the same domain concept (e.g. "retry", "auth", "caching").
+
+**6e. Reconcile and validate:**
+- Ensure tree invariants hold (every file assigned to exactly one feature, 10-25 features, 2-3 levels)
+- Apply `quality-gates.md` checks: density, coverage, confidence distribution, relation coverage
+- Final verification: all feature types valid, all non-root features have valid parent, relation coverage >= 20%
 
 **Coverage verification (non-negotiable):**
 - Compute `covered_files` = union of all files appearing in any spec anchor across all child results
