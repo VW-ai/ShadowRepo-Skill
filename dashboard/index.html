@@ -98,6 +98,8 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .spec-type-change { background: rgba(251,146,60,0.2); color: var(--orange); }
 .spec-id { font-size: 11px; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .spec-confidence { font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
+.spec-confidence-bar { height: 2px; border-radius: 1px; margin-top: 8px; background: var(--surface2); overflow: hidden; }
+.spec-confidence-fill { height: 100%; border-radius: 1px; }
 .spec-summary { margin-top: 8px; font-size: 12px; line-height: 1.6; }
 .spec-detail { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
 .spec-detail-section { margin-top: 8px; }
@@ -539,6 +541,7 @@ function renderSpecCard(s) {
       ${conf ? `<span class="spec-confidence">${conf}</span>` : ''}
     </div>
     <div class="spec-summary">${esc(s.summary)}</div>
+    ${s.confidence != null ? `<div class="spec-confidence-bar"><div class="spec-confidence-fill" style="width:${Math.round(s.confidence*100)}%; background:var(--${s.type === 'decision' ? 'yellow' : s.type === 'constraint' ? 'red' : s.type === 'contract' ? 'purple' : s.type === 'convention' ? 'green' : s.type === 'context' ? 'cyan' : s.type === 'change' ? 'orange' : 'accent'});"></div></div>` : ''}
     ${isExpanded ? `<div class="spec-detail">
       ${s.detail ? `<div class="spec-detail-section"><h4>Detail</h4><p style="font-size:12px; line-height:1.7;">${esc(s.detail)}</p></div>` : ''}
       ${anchors.length ? `<div class="spec-detail-section"><h4>Anchors (${anchors.length})</h4><ul class="anchor-list">${anchors.map(a => `<li>${esc(typeof a === 'string' ? a : a.file)}${a.symbols ? ' — ' + a.symbols.join(', ') : ''}</li>`).join('')}</ul></div>` : ''}
