@@ -164,10 +164,20 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 .key-files { list-style: none; max-height: 150px; overflow-y: auto; }
 .key-files li { font-size: 11px; color: var(--accent); padding: 2px 0; font-family: var(--font); }
 
+/* ── Mobile Sidebar Toggle ── */
+.sidebar-toggle { display: none; background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; padding: 4px 8px; font-family: var(--font); min-height: 44px; min-width: 44px; }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99; }
+
 /* ── Responsive ── */
 @media (max-width: 800px) {
-  .sidebar { display: none; }
+  .sidebar { display: none; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; width: 280px; min-width: 280px; }
+  .sidebar.open { display: flex; }
+  .sidebar-overlay.open { display: block; }
+  .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
   :root { --sidebar-w: 0px; }
+  .topbar .stats { gap: 8px; }
+  .topbar .stats .divider { display: none; }
+  .stat-label { display: none; }
 }
 </style>
 </head>
@@ -201,8 +211,12 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 
   <!-- Main -->
   <div class="main">
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
     <!-- Top bar -->
     <header class="topbar">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle feature tree">&#9776;</button>
       <h1 class="logo">ShadowRepo</h1>
       <span id="repo-name" style="color:var(--text-dim); font-size: 12px;"></span>
       <div class="stats" id="topbar-stats"></div>
@@ -631,6 +645,11 @@ function switchTab(tab) {
 }
 
 // ── Helpers ──
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.getElementById('sidebar-overlay').classList.toggle('open');
+}
+
 function esc(str) {
   if (!str) return '';
   const div = document.createElement('div');
