@@ -49,7 +49,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 
 /* ── Tabs ── */
 .tab-bar { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); }
-.tab { padding: 10px 20px; cursor: pointer; color: var(--text-dim); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border: none; border-bottom: 2px solid transparent; background: none; font-family: var(--font); transition: color 0.15s, border-color 0.15s, background 0.15s; }
+.tab { padding: 12px 20px; cursor: pointer; color: var(--text-dim); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border: none; border-bottom: 2px solid transparent; background: none; font-family: var(--font); min-height: 44px; transition: color 0.15s, border-color 0.15s, background 0.15s; }
 .tab:hover { color: var(--text); background: var(--surface2); }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 .tab-panel { display: none; }
@@ -64,7 +64,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 
 /* ── Feature Tree ── */
 .tree-node { user-select: none; }
-.tree-label { display: flex; align-items: center; gap: 6px; padding: 5px 12px; cursor: pointer; transition: background 0.1s; font-size: 12px; }
+.tree-label { display: flex; align-items: center; gap: 6px; padding: 8px 12px; cursor: pointer; transition: background 0.1s; font-size: 12px; min-height: 36px; }
 .tree-label:hover { background: var(--surface2); }
 .tree-label.selected { background: var(--accent-dim); color: #fff; }
 .tree-toggle { width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); font-size: 10px; flex-shrink: 0; transition: transform 0.15s; }
@@ -110,7 +110,7 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 
 /* ── Filters ── */
 .filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-.filter-chip { padding: 4px 12px; border-radius: 14px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-dim); transition: all 0.15s; }
+.filter-chip { padding: 6px 14px; border-radius: 14px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--text-dim); min-height: 32px; transition: color 0.15s, border-color 0.15s, background 0.15s; }
 .filter-chip:hover { border-color: var(--text-dim); color: var(--text); }
 .filter-chip.active { border-color: var(--accent); background: rgba(108,138,255,0.1); color: var(--accent); }
 .search-input { flex: 1; min-width: 200px; padding: 6px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-family: var(--font); font-size: 12px; outline: none; }
