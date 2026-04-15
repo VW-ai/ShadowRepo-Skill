@@ -38,7 +38,8 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 
 /* ── Topbar ── */
 .topbar .logo { font-size: 15px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; margin: 0; }
-.topbar .stats { display: flex; gap: 20px; margin-left: auto; }
+.topbar .stats { display: flex; gap: 16px; margin-left: auto; align-items: center; }
+.topbar .stats .divider { width: 1px; height: 20px; background: var(--border); }
 .stat { display: flex; align-items: center; gap: 6px; }
 .stat-value { font-weight: 700; font-size: 14px; }
 .stat-label { color: var(--text-dim); font-size: 11px; }
@@ -362,9 +363,11 @@ function renderTopbar() {
   const status = (m.build_status || 'unknown').toLowerCase();
   stats.innerHTML = `
     <span class="build-badge ${status}">${m.build_status || '?'}</span>
+    <span class="divider"></span>
     <div class="stat"><span class="stat-value">${m.stats?.total_features || data.features.length}</span><span class="stat-label">features</span></div>
     <div class="stat"><span class="stat-value">${m.stats?.total_specs || data.specs.length}</span><span class="stat-label">specs</span></div>
     <div class="stat"><span class="stat-value">${m.stats?.coverage_percent != null ? m.stats.coverage_percent + '%' : '—'}</span><span class="stat-label">coverage</span></div>
+    <span class="divider"></span>
     <div class="stat" style="color:var(--text-dim); font-size:11px;">${formatDate(m.built_at)}</div>
   `;
 }
