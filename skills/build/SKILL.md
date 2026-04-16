@@ -143,6 +143,20 @@ After the coverage loop completes, write the final JSON files:
    }
    ```
 
+### Step 3b: Bundle Dashboard
+
+Copy the dashboard template into `.shadowrepo/` with data inlined:
+
+1. Read `dashboard/index.html` from the skill repo
+2. Replace the four data placeholders with the JSON just written:
+   - `/*__SHADOWREPO_META__*/ null` → `/*__SHADOWREPO_META__*/ <meta.json contents>`
+   - `/*__SHADOWREPO_FEATURES__*/ null` → `/*__SHADOWREPO_FEATURES__*/ <features.json contents>`
+   - `/*__SHADOWREPO_SPECS__*/ null` → `/*__SHADOWREPO_SPECS__*/ <specs.json contents>`
+   - `/*__SHADOWREPO_COVERAGE__*/ null` → `/*__SHADOWREPO_COVERAGE__*/ <coverage.json contents>`
+3. Write to `.shadowrepo/index.html`
+
+Result: one self-contained HTML file. Double-click to open — no server needed.
+
 ### Step 4: Clean Up
 
 - Delete `.shadowrepo/.tmp/` directory (temp agent results from all rounds)
@@ -166,6 +180,7 @@ Types:     {intent}i / {decision}d / {constraint}cn / {contract}ct / {convention
 {endif}
 
 Written to .shadowrepo/
+Dashboard: open .shadowrepo/index.html in a browser
 ```
 
 ## Error Handling

@@ -433,13 +433,31 @@ const TYPE_COLORS = { intent:'#818cf8', decision:'#fbbf24', constraint:'#f87171'
 
 /* ═══════════════════════════════════════════════
    Data Loading
+   Mode 1: Inline data (injected by build skill — works with file://)
+   Mode 2: Fetch from relative paths (works with HTTP server)
+   Mode 3: Manual pick / drag-drop
    ═══════════════════════════════════════════════ */
+
+// ── INLINE DATA (replaced by build skill) ──
+// When the build skill generates .shadowrepo/index.html, it replaces
+// these null values with actual JSON. If they're null, we fall back to fetch.
+const INLINE_META = /*__SHADOWREPO_META__*/ null;
+const INLINE_FEATURES = /*__SHADOWREPO_FEATURES__*/ null;
+const INLINE_SPECS = /*__SHADOWREPO_SPECS__*/ null;
+const INLINE_COVERAGE = /*__SHADOWREPO_COVERAGE__*/ null;
+
 (async function autoLoad() {
+  // Mode 1: Inline data present — instant boot, no fetch needed
+  if (INLINE_META && INLINE_FEATURES && INLINE_SPECS) {
+    D = { meta: INLINE_META, features: INLINE_FEATURES, specs: INLINE_SPECS, coverage: INLINE_COVERAGE };
+    boot(); return;
+  }
+  // Mode 2: Try fetching from relative paths (HTTP server)
   const s = document.getElementById('load-status');
-  const paths = ['../.shadowrepo/', '.shadowrepo/'];
+  const paths = ['./', '../.shadowrepo/', '.shadowrepo/'];
   for (const base of paths) {
     try {
-      s.textContent = 'Looking for .shadowrepo/...';
+      s.textContent = 'Looking for data...';
       const [meta, features, specs, coverage] = await Promise.all(
         ['meta.json','features.json','specs.json','coverage.json'].map(f =>
           fetch(base + f).then(r => { if (!r.ok) throw 0; return r.json(); })
@@ -449,7 +467,8 @@ const TYPE_COLORS = { intent:'#818cf8', decision:'#fbbf24', constraint:'#f87171'
       boot(); return;
     } catch {}
   }
-  s.textContent = 'No .shadowrepo/ found — use the button or drag & drop.';
+  // Mode 3: Manual
+  s.textContent = 'Open a .shadowrepo/ folder or drag & drop the JSON files.';
 })();
 
 async function pickFolder() {

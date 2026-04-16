@@ -81,6 +81,8 @@ Overwrite `.shadowrepo/` files with merged data:
 
 Clean up `.shadowrepo/.tmp/` if used.
 
+Re-bundle the dashboard: same as build Step 3b — read `dashboard/index.html` template, replace data placeholders, write `.shadowrepo/index.html`.
+
 ### Step 6: Report
 
 ```
