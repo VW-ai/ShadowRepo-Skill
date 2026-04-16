@@ -147,7 +147,7 @@ After the coverage loop completes, write the final JSON files:
 
 Copy the dashboard template into `.shadowrepo/` with data inlined:
 
-1. Read `dashboard/index.html` from the skill repo
+1. Read `dashboard.html` from this skill's directory (alongside this SKILL.md)
 2. Replace the four data placeholders with the JSON just written:
    - `/*__SHADOWREPO_META__*/ null` → `/*__SHADOWREPO_META__*/ <meta.json contents>`
    - `/*__SHADOWREPO_FEATURES__*/ null` → `/*__SHADOWREPO_FEATURES__*/ <features.json contents>`
