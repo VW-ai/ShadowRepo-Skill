@@ -45,9 +45,22 @@ graph LR
 
 ## Quick Start
 
+ShadowRepo ships as a [Claude Code plugin](https://docs.claude.com/en/docs/claude-code/plugins). Two install paths:
+
+**End users — install via marketplace** (recommended):
+
+```
+/plugin marketplace add VW-ai/ShadowRepo-Skill
+/plugin install shadowrepo@shadowrepo
+```
+
+**Contributors — local dev with live edits**:
+
 ```bash
 git clone https://github.com/VW-ai/ShadowRepo-Skill.git
-cd ShadowRepo-Skill && ./install.sh
+cd ShadowRepo-Skill
+source ./dev-install.sh           # adds `claude-sr` alias to your shell rc
+claude-sr                         # launches Claude Code with shadowrepo loaded
 ```
 
 Then, in any project:
@@ -206,12 +219,20 @@ Core execution is **recursive** — sense → understand → extract → split �
 
 ## Uninstall
 
+Marketplace install:
+
+```
+/plugin uninstall shadowrepo
+```
+
+Contributor (dev) install — removes the `claude-sr` alias and any legacy skill symlinks left over from pre-plugin installs:
+
 ```bash
-./install.sh remove
+./dev-install.sh remove
 ```
 
 ---
 
 <p align="center">
-  <sub>Built as a Claude Code Skill Suite · No servers, no dependencies, just specs</sub>
+  <sub>Built as a Claude Code Plugin · No servers, no dependencies, just specs</sub>
 </p>

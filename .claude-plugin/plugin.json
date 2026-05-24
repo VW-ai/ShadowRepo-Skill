@@ -1,0 +1,8 @@
+{
+  "name": "shadowrepo",
+  "version": "0.1.0",
+  "description": "Semantic code knowledge graph builder. Scans repos, builds structured feature trees and spec graphs, detects code-spec drift, generates documentation. Six skills: build, check, update, render, preview, help.",
+  "author": {
+    "name": "Wayne Wang"
+  }
+}
